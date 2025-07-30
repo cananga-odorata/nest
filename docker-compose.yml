@@ -1,0 +1,17 @@
+services:
+  db-best:
+    image: postgres:latest
+    container_name: db-postgres-best
+    environment: 
+      POSTGRES_USER: cananga
+      POSTGRES_PASSWORD: qwerasdfqwer1234
+      POSTGRES_DB: best_db
+    ports:
+      - "5454:5432"
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+
+networks:
+  hubpay-networks:
+    driver: bridge
