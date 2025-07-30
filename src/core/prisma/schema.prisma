@@ -7,3 +7,105 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+<<<<<<< HEAD
+=======
+enum Role {
+    SUPER_ADMIN
+    MERCHANT_USER
+}
+
+model User {
+    id         String    @id @default(cuid())
+    email      String    @unique
+    password   String
+    name       String?
+    role       Role      @default(MERCHANT_USER)
+    isActive   Boolean   @default(true)
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @updatedAt
+    merchantId String?
+    merchant   Merchant? @relation(fields: [merchantId], references: [id])
+}
+
+model Merchant {
+    id          String   @id @default(cuid())
+    name        String   @unique
+    callbackUrl String? //callback
+    isActive    Boolean  @default(true)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    gatewayConfigs MerchantGatewayConfig[]
+    transactions   Transaction[]
+    users          User[]
+}
+
+model PaymentGateway {
+    id              Int                     @id @default(autoincrement())
+    code            String                  @unique
+    name            String
+    isActive        Boolean                 @default(true)
+    merchantConfigs MerchantGatewayConfig[]
+}
+
+model MerchantGatewayConfig {
+    id           String         @id @default(cuid())
+    merchantId   String
+    gatewayId    Int
+    credentials  Json
+    isActive     Boolean        @default(true)
+    createdAt    DateTime       @default(now())
+    updatedAt    DateTime       @updatedAt
+    merchant     Merchant       @relation(fields: [merchantId], references: [id])
+    gateway      PaymentGateway @relation(fields: [gatewayId], references: [id])
+    transactions Transaction[]
+
+    @@unique([merchantId, gatewayId])
+}
+
+model Transaction {
+    id                String            @id @default(cuid())
+    merchantId        String
+    configId          String
+    amount            Decimal           @db.Decimal(10, 2)
+    currency          String            @default("THB")
+    status            TransactionStatus @default(PENDING)
+    merchantReference String
+    gatewayReference  String?
+
+    redirectUrl String? // URL สำหรับ redirect paid
+    callbackUrl String? // URL Server-to-Server callback
+
+    paymentUrl  String?
+    qrCodeImage String?
+
+    gatewayResponse Json?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    merchant Merchant              @relation(fields: [merchantId], references: [id])
+    config   MerchantGatewayConfig @relation(fields: [configId], references: [id])
+    logs     TransactionLog[]
+
+    @@index([merchantId, merchantReference])
+}
+
+model TransactionLog {
+    id            String      @id @default(cuid())
+    transactionId String
+    eventType     String
+    message       String
+    payload       Json?
+    createdAt     DateTime    @default(now())
+    transaction   Transaction @relation(fields: [transactionId], references: [id])
+}
+
+enum TransactionStatus {
+    PENDING
+    SUCCESSFUL
+    FAILED
+    CANCELED
+    IN_PROGRESS
+}
+>>>>>>> b822c13 (feat: Apply stashed work and integrate local changes)
