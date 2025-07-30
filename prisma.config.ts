@@ -1,3 +1,6 @@
+
+import 'dotenv/config';
+
 export default {
-    schema: './src/core/prisma/schema.prisma',
+  schema: './src/core/prisma/schema.prisma',
 };
